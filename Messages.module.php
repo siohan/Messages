@@ -20,7 +20,7 @@ class Messages extends CMSModule
   
   function GetName() { return 'Messages'; }   
   function GetFriendlyName() { return $this->Lang('friendlyname'); }   
-  function GetVersion() { return '0.3'; }  
+  function GetVersion() { return '0.3.1'; }  
   function GetHelp() { return $this->Lang('help'); }   
   function GetAuthor() { return 'Claude SIOHAN'; } 
   function GetAuthorEmail() { return 'claude.siohan@gmail.com'; }
@@ -41,7 +41,7 @@ class Messages extends CMSModule
   
   function GetDependencies()
   {
-	return array('Adherents'=>'0.3');
+	return array('Adherents'=>'0.3.3.1');
   }
 
   

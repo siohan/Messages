@@ -1,7 +1,7 @@
 <?php
 #-------------------------------------------------------------------------
 # Module: Messages
-# Version: 0.3
+# Version: 0.3.1
 # Method: Upgrade
 #-------------------------------------------------------------------------
 # CMS - CMS Made Simple is (c) 2008 by Ted Kulp (wishy@cmsmadesimple.org)
@@ -56,6 +56,13 @@ switch($current_version)
 			
 			}
 		}
+	}
+	case "0.3" :
+	{
+		$dict = NewDataDictionary( $db );
+		$flds = "actif I(1) DEFAULT 1";
+		$sqlarray = $dict->AddColumnSQL( cms_db_prefix()."module_messages_recipients", $flds);
+		$dict->ExecuteSQLArray($sqlarray);
 	}	
 	
 

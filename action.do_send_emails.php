@@ -71,6 +71,7 @@ else
 	$sendtime = date("H:i:s");
 }
 $mess_ops = new T2t_messages;
+//transforme la date en time unix
 $time_envoi = $mess_ops->datetotimeunix($senddate, $sendtime);
 //var_dump($time_envoi);
 $sent = 1;
