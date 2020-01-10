@@ -22,7 +22,9 @@ $(document).ready(function(){
 //]]>
 </script>
 <h2>Liste des messages</h2>
-<div class="pageoptions"><p class="pageoptions">{$itemcount}&nbsp;{$itemsfound} &nbsp; {$envoi_sms}</p></div>
+<a href="{cms_action_url action=add_edit_message}">{admin_icon icon='newobject.gif'}Ajouter un message</a>
+<a href="{cms_action_url action=relance_messages}">{admin_icon icon='newobject.gif'}Relancer les messages non confirmés</a>
+<div class="pageoptions"><p class="pageoptions">{$itemcount}&nbsp;{$itemsfound} &nbsp;</p></div>
 {if $itemcount > 0}
 {$form2start}
 <table border="0" cellspacing="0" cellpadding="0" class="pagetable">
@@ -36,7 +38,7 @@ $(document).ready(function(){
 		<th>Envoyé ?</th>
 		<th>Erreur(s)</th>
 		<th>Accusé(s)</th>
-		<th colspan="2">Action(s)</th>
+		<th colspan="3">Action(s)</th>
 		<th><input type="checkbox" id="selectall" name="selectall"></th>
 	</tr>
  </thead>
@@ -47,11 +49,12 @@ $(document).ready(function(){
 	<td>{$entry->sender}</td>
 	<td>{$entry->senddate|date_format:"%d-%m-%Y"} - {$entry->sendtime}</td>
 	<td>{$entry->subject}</td>
-	<td>{$entry->nb_recipients}</td>
+	<td>{$entry->group_id}</td>
 	<td>{$entry->sent}</td>
 	<td>{$entry->nb_errors}</td>
 	<td>{$entry->nb_ar}</td>
 	<td>{$entry->view}</td>
+	<td>{$entry->edit}</td>
 	<td>{$entry->delete}</td> 
 	<td><input type="checkbox" name="{$actionid}sel[]" value="{$entry->id}" class="select"></td>
   </tr>

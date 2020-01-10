@@ -17,8 +17,7 @@ if(isset($params['activetab']) && !empty($params['activetab']))
  }	
 	
 	echo $this->SetTabHeader('mess', 'Messages', ('mess' == $tab)?true:false);
-	echo $this->SetTabHeader('auto', 'Automatisation', ('auto' == $tab)?true:false);	
-//	echo $this->SetTabHeader('config', 'Configuration', ('config' == $tab)?true:false);	
+	echo $this->SetTabHeader('config', 'Configuration', ('config' == $tab)?true:false);	
 	echo $this->EndTabHeaders();
 
 	echo $this->StartTabContent();
@@ -28,15 +27,10 @@ if(isset($params['activetab']) && !empty($params['activetab']))
 	include(dirname(__FILE__).'/action.admin_messages_tab.php');
    	echo $this->EndTab();
 
-	echo $this->StartTab('auto', $params);
-	include(dirname(__FILE__).'/action.auto_process_tab.php');
-    	echo $this->EndTab();
-/*
 	echo $this->StartTab('config', $params);
-	include(dirname(__FILE__).'/action.admin_config_tab.php');
-    	//include(dirname(__FILE__).'/action.admin_joueurs_tab.php');
-   	echo $this->EndTab();
-*/
+	include(dirname(__FILE__).'/action.admin_options_tab.php');
+    	echo $this->EndTab();
+
 
 echo $this->EndTabContent();
 

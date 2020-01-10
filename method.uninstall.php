@@ -1,10 +1,7 @@
 <?php
 #-------------------------------------------------------------------------
-# Module: Newsletter Made Simple (c) 2008-2014 by Robert Campbell
-#         (calguy1000@cmsmadesimple.org)
-#  An addon module for CMS Made Simple to provide a flexible
-#  mailing list solution.
-#
+# Module: Messages (c) 2008-2014 by AssoSimple
+#        
 #-------------------------------------------------------------------------
 # CMSMS - CMS Made Simple is (c) 2005 by Ted Kulp (wishy@cmsmadesimple.org)
 # Visit the CMSMS Homepage at: http://www.cmsmadesimple.org
@@ -45,8 +42,8 @@ $dict->ExecuteSQLArray($sqlarray);
 
 
 // remove the permissions
-$this->RemovePermission('Message use');
-//$this->RemovePermission('Adherents prefs');
+$this->RemovePermission('Messages use');
+
 
 
 // remove the preference

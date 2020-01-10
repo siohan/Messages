@@ -135,7 +135,10 @@ else
 
 	
 			$add_to_recipients = $mess_ops->add_messages_to_recipients($message_id, $sels, $email_contact,$senttouser,$status, $ar);
-		
+			//on crée une url pour l'accusé de réception
+			$retourid = $this->GetPreference('pageid_message');
+			$page = $cg_ops->resolve_alias_or_id($retourid);
+			$lien = $this->create_url($id,'default',$page, array("message_id"=>$message_id, "genid"=>$sels));
 		}
 
 			foreach($destinataires as $item=>$v)
@@ -146,6 +149,7 @@ else
 				$cmsmailer = new \cms_mailer();
 				$cmsmailer->reset();
 			//	$cmsmailer->SetFrom($sender);//$this->GetPreference('admin_email'));
+				$cmsmailer->SetSMTPDebug($flag = TRUE);
 				$cmsmailer->AddAddress($v,$name='');
 				$cmsmailer->IsHTML(false);
 				$cmsmailer->SetPriority($priority);
@@ -167,4 +171,4 @@ else
 	
 
 }
-$this->Redirect($id, 'defaultadmin', $returnid);
+$this->RedirectToAdminTab('mess');

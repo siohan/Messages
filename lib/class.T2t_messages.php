@@ -10,7 +10,7 @@ class T2t_messages
 function details_message($message_id)
 {
 	$db = cmsms()->GetDb();
-	$query = "SELECT id, sender, senddate, sendtime, replyto, group_id,recipients_number, subject, message, sent FROM ".cms_db_prefix()."module_messages_messages WHERE id = ?";
+	$query = "SELECT id, sender, senddate, sendtime, replyto, group_id,recipients_number, subject, message, sent, priority, timbre, ar, relance, occurence FROM ".cms_db_prefix()."module_messages_messages WHERE id = ?";
 	$dbresult = $db->Execute($query, array($message_id));
 	$details = array();
 	if($dbresult)
@@ -27,17 +27,39 @@ function details_message($message_id)
 			$details['subject'] = $row['subject'];
 			$details['message'] = $row['message'];
 			$details['sent'] = $row['sent'];
+			$details['priority'] = $row['priority'];
+			$details['timbre'] = $row['timbre'];
+			$details['ar'] = $row['ar'];
+			$details['relance'] = $row['relance'];
+			$details['occurence'] = $row['occurence'];
 		}
 	}
 		return $details;
 	
 
-}	
-function add_message($sender, $senddate, $sendtime, $replyto, $group_id,$recipients_number, $subject, $message, $sent)
+}
+//ajoute un message	
+function add_message($sender, $senddate, $sendtime, $replyto, $group_id,$recipients_number, $subject, $message, $sent, $priority, $timbre, $ar, $relance, $occurence)
 {
 	$db = cmsms()->GetDb();
-	$query = "INSERT INTO ".cms_db_prefix()."module_messages_messages (sender, senddate, sendtime, replyto, group_id,recipients_number, subject, message, sent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-	$dbresult = $db->Execute($query, array($sender, $senddate, $sendtime, $replyto, $group_id,$recipients_number, $subject, $message, $sent));
+	$query = "INSERT INTO ".cms_db_prefix()."module_messages_messages (sender, senddate, sendtime, replyto, group_id,recipients_number, subject, message, sent, priority, timbre, ar, relance, occurence) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+	$dbresult = $db->Execute($query, array($sender, $senddate, $sendtime, $replyto, $group_id,$recipients_number, $subject, $message, $sent, $priority, $timbre, $ar, $relance, $occurence));
+	if($dbresult)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+//modifie un message existant
+
+function update_message($record_id, $sender, $senddate, $sendtime, $replyto, $group_id,$recipients_number, $subject, $message, $sent, $priority, $timbre, $ar, $relance, $occurence)
+{
+	$db = cmsms()->GetDb();
+	$query = "UPDATE ".cms_db_prefix()."module_messages_messages SET sender = ?, senddate = ?, sendtime = ?, replyto = ?, group_id = ?,recipients_number = ?, subject = ?, message = ?, sent = ?, priority = ?, timbre = ?, ar = ?, relance = ?, occurence = ? WHERE id = ?";
+	$dbresult = $db->Execute($query, array($sender, $senddate, $sendtime, $replyto, $group_id,$recipients_number, $subject, $message, $sent, $priority, $timbre, $ar, $relance, $occurence, $record_id));
 	if($dbresult)
 	{
 		return true;
@@ -52,8 +74,10 @@ function add_message($sender, $senddate, $sendtime, $replyto, $group_id,$recipie
 function add_messages_to_recipients($message_id, $genid, $recipients,$sent,$status, $ar)
 {
 	$db = cmsms()->GetDb();
-	$query = "INSERT INTO ".cms_db_prefix()."module_messages_recipients (message_id, genid, recipients,sent,status, ar) VALUES (?, ?, ?, ?, ?, ?)";
-	$dbresult = $db->Execute($query, array($message_id, $genid, $recipients,$sent,$status, $ar));
+	$relance = 0;
+	$timbre = time();
+	$query = "INSERT INTO ".cms_db_prefix()."module_messages_recipients (message_id, genid, recipients,sent,status, ar, relance,timbre) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+	$dbresult = $db->Execute($query, array($message_id, $genid, $recipients,$sent,$status, $ar, $relance, $timbre));
 	if($dbresult)
 	{
 		return true;
@@ -62,6 +86,22 @@ function add_messages_to_recipients($message_id, $genid, $recipients,$sent,$stat
 	{
 		$mess = $db->ErrorMsg();
 		return $mess;
+	}
+}
+//modifie un message déjà envoyé à un destinataire//incrémente la relance
+function update_recipients_message($message_id, $genid)
+{
+	$db = cmsms()->GetDb();
+	$timbre = time();
+	$query = "UPDATE ".cms_db_prefix()."module_messages_recipients SET relance = relance+1 , timbre = ?  WHERE message_id = ? AND genid = ?";
+	$dbresult = $db->Execute($query, array($timbre, $message_id, $genid));
+	if($dbresult)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 //indique que le message n'a pas été envoyé erreur email
@@ -97,9 +137,25 @@ function sent_message($message_id)
 function sent_email($message_id, $recipients)
 {
 	$db = cmsms()->GetDb();
-	$query = "UPDATE ".cms_db_prefix()."module_messages_recipients SET sent = 1, status = 'Messagerie interne' WHERE message_id = ? AND recipients LIKE ?";
-	$dbresult = $db->Execute($query, array($message_id, $recipients));
+	$timbre = time();
+	$query = "UPDATE ".cms_db_prefix()."module_messages_recipients SET sent = 1, status = 'Messagerie interne', relance = relance+1, timbre = ? WHERE message_id = ? AND recipients LIKE ?";
+	$dbresult = $db->Execute($query, array($timbre,$message_id, $recipients));
 	if($dbresult)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+//vérifie si ce message à déjà été envoyé à ce destinataire
+function is_already_sent($message_id, $genid)
+{
+	$db = cmsms()->GetDb();
+	$query = "SELECT * FROM ".cms_db_prefix()."module_messages_recipients WHERE message_id = ? AND genid = ?";
+	$dbresult = $db->Execute($query, array($message_id, $genid));
+	if($dbresult && $dbresult->RecordCount()>0)
 	{
 		return true;
 	}

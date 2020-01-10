@@ -21,45 +21,51 @@ if(isset($params['submit']))
 $db =& $this->GetDb();
 global $themeObject;
 
-$smarty->assign('revenir', 
-		$this->CreateLink($id, 'defaultadmin', $returnid, $contents='<= Revenir', array('activetab'=>'sms')));
-
 		
 $dbresult= array ();
 //SELECT * FROM ping_module_ping_recup_parties AS rec right JOIN ping_module_ping_joueurs AS j ON j.licence = rec.licence  ORDER BY j.id ASC
-$query= "SELECT id, message_id, genid, recipients, sent, status, ar FROM ".cms_db_prefix()."module_messages_recipients WHERE message_id = ?";
+$query= "SELECT id, message_id, genid, recipients, sent, status, ar, relance, FROM_UNIXTIME(timbre, '%d/%m/%Y %H:%i:%s') AS envoi FROM ".cms_db_prefix()."module_messages_recipients WHERE message_id = ?";
 
 $dbresult= $db->Execute($query, array($message_id));
 $rowclass= 'row1';
 $rowarray= array ();
 if ($dbresult && $dbresult->RecordCount() > 0)
   {
-	$adh_ops = new adherents_spid;
-	$ping_ops = new adherents_spid;
+	$adh_ops = new Asso_adherents;
     	while ($row= $dbresult->FetchRow())
       	{
 
+		$sent = $row['sent'];
+		$ar = $row['ar'];
 		$onerow= new StdClass();
 		$onerow->rowclass= $rowclass;
 		$onerow->id= $row['id'];
 		$onerow->message_id= $row['message_id'];
-		$onerow->genid= $ping_ops->get_name($row['genid']);
-		$onerow->sent= $row['sent'];
-		$onerow->status= $row['status'];
-		$onerow->ar= $row['ar'];
-		$onerow->recipients =$adh_ops->get_name($row['recipients']);
-		/*
-		if($ardate == '' || TRUE === is_null($ardate))
+		$onerow->genid= $adh_ops->get_name($row['genid']);
+		if($sent == 1)
 		{
-			$onerow->ardate = $themeObject->DisplayImage('icons/system/false.gif', $this->Lang('False'), '', '', 'systemicon');//$row['ardate'];
-			$onerow->artime = '';//$row['artime'];
+			$onerow->sent= $themeObject->DisplayImage('icons/system/true.gif', $this->Lang('true'), '', '', 'systemicon');
 		}
 		else
 		{
-			$onerow->ardate = $row['ardate'];
-			$onerow->artime = $row['artime'];
+			$onerow->sent= $themeObject->DisplayImage('icons/system/false.gif', $this->Lang('false'), '', '', 'systemicon');
+			$onerow->sent_back= $this->CreateLink($id, 'sent_back_to_user', $returnid,$contents='Renvoyer', array("genid"=>$row['genid'], "record_id"=>$row['message_id']));
 		}
-		*/
+		if($ar == 1)
+		{
+			$onerow->ar= $themeObject->DisplayImage('icons/system/true.gif', $this->Lang('true'), '', '', 'systemicon');
+		}
+		else
+		{
+			$onerow->ar= $themeObject->DisplayImage('icons/system/false.gif', $this->Lang('false'), '', '', 'systemicon');
+			$onerow->sent_back= $this->CreateLink($id, 'sent_back_to_user', $returnid,$contents='Renvoyer', array("genid"=>$row['genid'], "record_id"=>$row['message_id']));
+		}
+		
+		$onerow->status= $row['status'];
+		$onerow->relance= $row['relance'];
+		$onerow->envoi= $row['envoi'];
+	
+	
 		($rowclass == "row1" ? $rowclass= "row2" : $rowclass= "row1");
 		$rowarray[]= $onerow;
       }

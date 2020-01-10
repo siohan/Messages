@@ -21,8 +21,9 @@ $(document).ready(function(){
 });
 //]]>
 </script>
-<h2>Liste des destinataires</h2>
-<div class="pageoptions"><p class="pageoptions">{$itemcount}&nbsp;{$itemsfound} &nbsp; {$revenir}</p></div>
+<h2>Liste des destinataires du message</h2>
+<p><a href="{cms_action_url action='defaultadmin'}">{admin_icon icon='back.gif'} Revenir</a></p>
+<div class="pageoptions"><p class="pageoptions">{$itemcount}&nbsp;{$itemsfound} &nbsp; </p></div>
 {if $itemcount > 0}
 {*$form2start*}
 <table border="0" cellspacing="0" cellpadding="0" class="pagetable">
@@ -32,7 +33,10 @@ $(document).ready(function(){
 		<th>Destinataire</th>
 		<th>Envoyé ?</th>
 		<th>Statut</th>	
-		<th>Accusé réception</th>
+		<th>Réception confirmée ?</th>
+		<th>Nb relances</th>
+		<th>Dernier envoi</th>
+		<th>Action(s)</th>
 	<!--	<th><input type="checkbox" id="selectall" name="selectall"></th>-->
 	</tr>
  </thead>
@@ -44,6 +48,9 @@ $(document).ready(function(){
 	<td>{$entry->sent}</td>
 	<td>{$entry->status}</td>
 	<td>{$entry->ar}</td>
+	<td>{$entry->relance}</td>
+	<td>{$entry->envoi}</td>
+  <td>{$entry->sent_back}</td>
 <!--	<td><input type="checkbox" name="{$actionid}sel[]" value="{$entry->id}" class="select"></td>-->
   </tr>
 {/foreach}

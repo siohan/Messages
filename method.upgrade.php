@@ -63,7 +63,32 @@ switch($current_version)
 		$flds = "actif I(1) DEFAULT 1";
 		$sqlarray = $dict->AddColumnSQL( cms_db_prefix()."module_messages_recipients", $flds);
 		$dict->ExecuteSQLArray($sqlarray);
-	}	
+	}
+	case "0.3.1":
+	{
+		$dict = NewDataDictionary($db);
+		$flds = "priority I(1) DEFAULT 3, timbre I(11), ar I(1) DEFAULT 0, relance I(1) DEFAULT 0, occurence I(11) DEFAULT 0";
+		$sqlarray = $dict->AddColumnSQL( cms_db_prefix()."module_messages_messages", $flds);
+		$dict->ExecuteSQLArray($sqlarray);
+		
+		$dict = NewDataDictionary($db);
+		$flds = "relance I(1) DEFAULT 0, timbre I(11)";
+		$sqlarray = $dict->AddColumnSQL( cms_db_prefix()."module_messages_recipients", $flds);
+		$dict->ExecuteSQLArray($sqlarray);
+		
+		
+		$this->SetPreference('pageid_messages', '');
+		$this->SetPreference('LastRelanceMessages', time());
+		
+		# Mails templates
+		$fn = cms_join_path(dirname(__FILE__),'templates','orig_tpl_messages.tpl');
+		if( file_exists( $fn ) )
+		{
+			$template = file_get_contents( $fn );
+			$this->SetTemplate('messages_template',$template);
+		}
+	}
+		
 	
 
 }

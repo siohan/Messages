@@ -1,16 +1,16 @@
 <?php
-class sendTask implements CmsRegularTask
+class SendTask implements CmsRegularTask
 {
 
-   public function get_name()
-   {
-      return get_class();
-   }
+	
+	
+	public function get_name()
+   	{
+      		return get_class();
+   	}
 
-   public function get_description()
-   {
-      return 'Envoi des messages programmés';
-   }
+   public function get_description() {}
+   
 
    public function test($time = '')
    {
@@ -28,12 +28,8 @@ class sendTask implements CmsRegularTask
       $last_execute = $mess->GetPreference('LastSendMessage');
       
       // Définition de la périodicité de la tâche (24h ici)
-      if( $last_execute >= ($time - 900) ) return FALSE; // hardcoded to 15 minutes
-      {
-         return TRUE;
-      }
-      
-      return FALSE;
+      if( $time - $last_execute > 900 ) return true; // hardcoded to 15 minutes
+      return false;
       
    }
 
@@ -51,7 +47,7 @@ class sendTask implements CmsRegularTask
 	
 	$db = cmsms()->GetDb();
 	
-	$query = "SELECT id ,sender, replyto, senddate, sendtime, subject, message,group_id, sent FROM ".cms_db_prefix()."module_messages_messages WHERE sent = 0 AND UNIX_TIMESTAMP(CONCAT_WS(' ',senddate, sendtime)) < UNIX_TIMESTAMP()";
+	$query = "SELECT id ,sender, replyto, senddate, sendtime,priority, subject, message,group_id, sent, ar, relance, occurence FROM ".cms_db_prefix()."module_messages_messages WHERE sent = 0 AND timbre < UNIX_TIMESTAMP()";
 	
       	$dbresult = $db->Execute($query);
 	//on a donc les n licences pour faire la deuxième requete
@@ -62,6 +58,7 @@ class sendTask implements CmsRegularTask
 		
 		
 		$mess_ops = new T2t_messages;
+		$cg_ops = new CGExtensions;
 
 		while($row = $dbresult->FetchRow())
 		{	
@@ -69,25 +66,33 @@ class sendTask implements CmsRegularTask
 			$sender = $row['sender'];
 			$replyto = $row['replyto'];
 			$group_id = $row['group_id'];
+			$priority = $row['priority'];
 			$mess_id = $row['id'];
+			$ar = $row['ar'];
+			$relance = $row['relance'];
+			$occurence = $row['occurence'];
 			$envoi = $mess_ops->sent_message($mess_id);
 			
 			$gp_ops = new groups;
 			$recipients_number = $gp_ops->count_users_in_group($group_id);
 			
 			$message = $row['message'];
+			$retourid = $mess->GetPreference('pageid_messages');
+			$page = $cg_ops->resolve_alias_or_id($retourid);
+			
+			//$priority
 			$subject = $row['subject'];
 		//	$sender = $row['sender'];
 		
-			$contacts_ops = new contact;
-			$adherents = $contacts_ops->UsersFromGroup($group_id);
-			var_dump($adherents);
+		
+			$adherents = $gp_ops->liste_licences_from_group($group_id);
+		
 		
 			foreach($adherents as $sels)
 			{
 				//avant on envoie dans le module emails pour tous les utilisateurs et sans traitement
 
-				$query = "SELECT contact FROM ".cms_db_prefix()."module_adherents_contacts WHERE licence = ? AND type_contact = 1 LIMIT 1";
+				$query = "SELECT contact FROM ".cms_db_prefix()."module_adherents_contacts WHERE genid = ? AND type_contact = 1 LIMIT 1";
 				$dbresult = $db->Execute($query, array($sels));
 				$row = $dbresult->FetchRow();
 
@@ -99,6 +104,23 @@ class sendTask implements CmsRegularTask
 					$destinataires[] = $email_contact;
 				}
 				
+				$lien = $mess->create_url($id,'default',$page, array("message_id"=>$message_id, "genid"=>$sels));
+				if($ar == 1)
+				{
+					$message.= '<p><strong>Merci de bien vouloir confirmer réception de ce message en cliquant sur le lien ci-après : <a href="'.$lien.'" >Je confirme réception</a></p>';
+				}
+				if($relance == 1)
+				{
+					$message.= '<p><strong>Sans confirmation de réception, ce message se répétera.</strong></p>';
+				}
+				$montpl = $mess->GetTemplateResource('tpl_messages.tpl');						
+				$smarty = cmsms()->GetSmarty();
+				// do not assign data to the global smarty
+				$tpl = $smarty->createTemplate($montpl);
+				$tpl->assign('lien',$lien);
+				$tpl->assign('message',$message);
+			 	$output = $tpl->fetch();
+				
 			}	
 			
 			
@@ -106,21 +128,22 @@ class sendTask implements CmsRegularTask
 			{
 
 			//var_dump($item);
-				$priority = 3;
+				//on crée un lien de confirmation si nécessaire
+				
+				
 				$cmsmailer = new \cms_mailer();
 				$cmsmailer->reset();
-				$cmsmailer->SetFrom($sender);//$this->GetPreference('admin_email'));
+			//	$cmsmailer->SetFrom($sender);//$this->GetPreference('admin_email'));
 				$cmsmailer->AddAddress($v,$name='');
-				$cmsmailer->IsHTML(false);
+				$cmsmailer->IsHTML(true);
 				$cmsmailer->SetPriority($priority);
-				$cmsmailer->SetBody($message);
+				$cmsmailer->SetBody($output);
 				$cmsmailer->SetSubject($subject);
-				$cmsmailer->Send();
+				
 		                if( !$cmsmailer->Send() ) 
 				{			
 		                    	$mess_ops->not_sent_emails($mess_id, $v);
 					$this->Audit('',$this->GetName(),'Problem sending email to '.$v);
-
 		                }
 				else
 				{
@@ -128,6 +151,7 @@ class sendTask implements CmsRegularTask
 				}
 			}
 		}
+		
 		return true; // Ou false si ça plante	
 	}
 	else

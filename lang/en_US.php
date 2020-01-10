@@ -1,9 +1,9 @@
 <?php
-$lang['friendlyname'] = 'T2T Adhérents';
+$lang['friendlyname'] = 'Asso Messages';
 
 
 $lang['moddescription'] = 'Ce module gère les adhérents de votre club de ping.';
-$lang['welcome_text'] = '<p>Bienvenue dans le module T2T Adhérents</p>';
+$lang['welcome_text'] = '<p>Welcome to the Messages module</p>';
 $lang['changelog'] = '<ul>
 <li>Version 0.1beta3, Nov 2014 Sc Améliorations du front-office et déboguage du back</li>
 <ul>
@@ -11,9 +11,9 @@ $lang['changelog'] = '<ul>
    <li>Améliorations du back-office et corrections de bugs.</li>
 </ul>';
 $lang['help'] = '<h3>Que fait ce module ?</h3>
-<p>Ce module récupère les résultats de votre club et réalise des traitements afin de les disposer sur votre site internet.</p>
-<h3>Comment l\'utiliser ?</h3>
-<p>Le tag par défaut est celui-ci {cms_module module=\'Ping\'}</p>
+<p>This module allows you to send Messages for groups.</p>
+<h3>How to use it ?</h3>
+<p>Put this tag in one of your page : {cms_module module=\'Messages\'} And then report the alias of this page in the configuration onglet.</p>
 <h3>Support</h3>
 <ul>
 <li>Pour obtenir la dernière version officielle, FAQs, ou pour signaler un bug, faire une demande d\'améliorations, merci de consulter la forge du module à cette adresse : 

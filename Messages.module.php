@@ -2,7 +2,7 @@
 
 #-------------------------------------------------------------------------
 # Module : Messages - 
-# Version : 0.3, Sc
+# Version : 0.4, Sc
 # Auteur : Claude SIOHAN
 #-------------------------------------------------------------------------
 /**
@@ -20,9 +20,9 @@ class Messages extends CMSModule
   
   function GetName() { return 'Messages'; }   
   function GetFriendlyName() { return $this->Lang('friendlyname'); }   
-  function GetVersion() { return '0.3.1'; }  
+  function GetVersion() { return '0.4'; }  
   function GetHelp() { return $this->Lang('help'); }   
-  function GetAuthor() { return 'Claude SIOHAN'; } 
+  function GetAuthor() { return 'AssoSimple'; } 
   function GetAuthorEmail() { return 'claude.siohan@gmail.com'; }
   function GetChangeLog() { return $this->Lang('changelog'); }
     
@@ -41,7 +41,7 @@ class Messages extends CMSModule
   
   function GetDependencies()
   {
-	return array('Adherents'=>'0.3.3.1');
+	return array('Adherents'=>'0.3.4.5');
   }
 
   
@@ -64,6 +64,8 @@ class Messages extends CMSModule
 	$this->SetParameterType('message',CLEAN_STRING);
 	$this->SetParameterType('sujet',CLEAN_STRING);
 	$this->SetParameterType('produit_id',CLEAN_INT);
+	$this->SetParameterType('message_id',CLEAN_INT);
+	$this->SetParameterType('genid',CLEAN_INT);
 	
 	
 	//form parameters
@@ -75,7 +77,8 @@ class Messages extends CMSModule
 
 function InitializeAdmin()
 {
-  	$this->SetParameters();
+  	return parent::InitializeAdmin();
+	$this->SetParameters();
 	//$this->CreateParameter('pagelimit', 100000, $this->Lang('help_pagelimit'));
 }
 
@@ -87,9 +90,10 @@ public function HasCapability($capability, $params = array())
 
 public function get_tasks()
 {
-   $obj = array();
+   $obj = null;
 	//$obj[0] = new RecupAdherentsTask();
-   	$obj[0] = new sendTask();  
+   	$obj[0] = new SendTask();  
+	$obj[1 ] =new RelanceMessagesTask();
 	
 return $obj; 
 }

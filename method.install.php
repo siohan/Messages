@@ -41,7 +41,12 @@ $flds = "
 	recipients_number I(3),
 	subject C(255),
 	message X,
-	sent I(1) DEFAULT 0";
+	sent I(1) DEFAULT 0,
+	priority I(1) DEFAULT 3,
+	timbre I(11), 
+	ar I(1) DEFAULT 0,
+	relance I(1) DEFAULT 0,
+	occurence I(11)";
 	$sqlarray = $dict->CreateTableSQL( cms_db_prefix()."module_messages_messages", $flds, $taboptarray);
 	$dict->ExecuteSQLArray($sqlarray);			
 //
@@ -59,20 +64,19 @@ $flds = "
 	sent I(1) DEFAULT 0,
 	status C(255), 
 	actif I(1) DEFAULT 1,
-	ar I(1) DEFAULT 0";
+	ar I(1) DEFAULT 0,
+	relance I(1) DEFAULT 0,
+	timbre I(11)";
 	$sqlarray = $dict->CreateTableSQL( cms_db_prefix()."module_messages_recipients", $flds, $taboptarray);
 	$dict->ExecuteSQLArray($sqlarray);			
 //
-// mysql-specific, but ignored by other database
-$taboptarray = array( 'mysql' => 'ENGINE=MyISAM' );
-
-$dict = NewDataDictionary( $db );
 
 $this->SetPreference('LastSendMessage', time());
+$this->SetPreference('LastRelanceMessages', time());
+$this->SetPreference('pageid_messages', '');
 //Permissions
 $this->CreatePermission('Messages use', 'Utiliser le module Message');
 $this->CreatePermission('Messages Delete', 'Supprimer des messages');
-
 
 // put mention into the admin log
 $this->Audit( 0, 

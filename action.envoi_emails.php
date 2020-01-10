@@ -2,7 +2,7 @@
 
 if(!isset($gCms)) exit;
 //on vérifie les permissions
-if(!$this->CheckPermission('Message use'))
+if(!$this->CheckPermission('Messages use'))
 {
 	echo $this->ShowErrors($this->Lang('needpermission'));
 	return;
@@ -28,7 +28,7 @@ $smarty->assign('from',
 $array_priorities = array("Normale"=>"3","Haute"=>"1","Basse"=>"5");
 $smarty->assign('priority', $this->CreateInputDropdown($id, 'priority', $array_priorities));
 $smarty->assign('senddate',
-		$this->CreateInputText($id,'senddate', (isset($senddate)?$senddate:$aujourdhui)));
+		$this->CreateInputDate($id,'senddate', (isset($senddate)?$senddate:$aujourdhui)));
 $smarty->assign('sendtime',
 		$this->CreateInputText($id,'sendtime', (isset($sendtime)?$sendtime:$heure_actuelle)));
 $smarty->assign('sujet',

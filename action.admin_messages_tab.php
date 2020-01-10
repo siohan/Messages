@@ -8,7 +8,7 @@ if(!$this->CheckPermission('Messages use'))
 }
 $db =& $this->GetDb();
 global $themeObject;
-
+$gp_ops = new groups;
 $smarty->assign('envoi_sms', 
 		$this->CreateLink($id, 'envoi_emails', $returnid,$themeObject->DisplayImage('icons/system/add.gif', 'Envoyer un mail', '', '', 'systemicon')));
 
@@ -16,7 +16,7 @@ $smarty->assign('envoi_sms',
 		
 $dbresult= array ();
 //SELECT * FROM ping_module_ping_recup_parties AS rec right JOIN ping_module_ping_joueurs AS j ON j.licence = rec.licence  ORDER BY j.id ASC
-$query= "SELECT id,sender, replyto, group_id, senddate, sendtime, subject, message, recipients_number, sent FROM ".cms_db_prefix()."module_messages_messages ORDER BY senddate DESC, sendtime DESC";
+$query= "SELECT id,sender, replyto, group_id, senddate, sendtime, subject, message, recipients_number, sent FROM ".cms_db_prefix()."module_messages_messages ORDER BY timbre DESC";
 
 $dbresult= $db->Execute($query);
 $rowclass= 'row1';
@@ -30,6 +30,8 @@ if ($dbresult && $dbresult->RecordCount() > 0)
 	$onerow= new StdClass();
 	$onerow->rowclass= $rowclass;
 	$sent = $row['sent'];
+	$group_id = $gp_ops->details_groupe($row['group_id']);
+	
 	
 	if($sent == '0')
 	{
@@ -39,7 +41,7 @@ if ($dbresult && $dbresult->RecordCount() > 0)
 	else
 	{
 		$onerow->sent= $themeObject->DisplayImage('icons/system/true.gif', $this->Lang('true'), '', '', 'systemicon');
-		$onerow->view = $this->CreateLink($id, 'show_message', $returnid, $themeObject->DisplayImage('icons/system/view.gif', $this->Lang('view'), '', '', 'systemicon'),array("record_id"=>$row['id']));
+		$onerow->view = $this->CreateLink($id, 'show_recipients', $returnid, $themeObject->DisplayImage('icons/system/view.gif', $this->Lang('view'), '', '', 'systemicon'),array("record_id"=>$row['id']));
 	}
 	
 	$onerow->id= $row['id'];
@@ -48,12 +50,13 @@ if ($dbresult && $dbresult->RecordCount() > 0)
 	$onerow->senddate= $row['senddate'];
 	$onerow->sendtime= $row['sendtime'];
 	$onerow->subject= $row['subject'];
-	//$onerow->content= $row['content'];
-	$onerow->nb_recipients = $this->CreateLink($id, 'show_recipients', $returnid, $row['recipients_number'],array("record_id"=>$row['id']));;
+	$onerow->group_id = $group_id['nom'];
+//	$onerow->nb_recipients = $this->CreateLink($id, 'show_recipients', $returnid, $row['recipients_number'],array("record_id"=>$row['id']));;
 	$onerow->nb_errors = $mess_ops->count_errors_per_message($row['id']);
 	$onerow->nb_ar = $mess_ops->count_ar_per_message($row['id']);
 	
-	$onerow->renvoyer = $this->CreateLink($id, 'sent_back', $returnid, $themeObject->DisplayImage('icons/system/new.gif', $this->Lang('new'), '', '', 'systemicon'),array("message_id"=>$row['id']));	
+	$onerow->renvoyer = $this->CreateLink($id, 'sent_back', $returnid, $themeObject->DisplayImage('icons/system/new.gif', $this->Lang('new'), '', '', 'systemicon'),array("message_id"=>$row['id']));
+	$onerow->edit = $this->CreateLink($id, 'add_edit_message', $returnid, $themeObject->DisplayImage('icons/system/edit.gif', $this->Lang('edit'), '', '', 'systemicon'),array("record_id"=>$row['id']));	
 	$onerow->delete= $this->CreateLink($id, 'admin_delete', $returnid, $themeObject->DisplayImage('icons/system/delete.gif', $this->Lang('delete'), '', '', 'systemicon'),array('message_id'=>$row['id']));
 	($rowclass == "row1" ? $rowclass= "row2" : $rowclass= "row1");
 	$rowarray[]= $onerow;
