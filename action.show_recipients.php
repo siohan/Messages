@@ -57,7 +57,7 @@ if ($dbresult && $dbresult->RecordCount() > 0)
 		}
 		else
 		{
-			$onerow->ar= $themeObject->DisplayImage('icons/system/false.gif', $this->Lang('false'), '', '', 'systemicon');
+			$onerow->ar= $this->CreateLink($id, 'messages_action', $returnid,$themeObject->DisplayImage('icons/system/false.gif', $this->Lang('false'), '', '', 'systemicon'), array("obj"=>"confirmed", "record_id"=>$row['id'], "message_id"=>$row['message_id']));
 			$onerow->sent_back= $this->CreateLink($id, 'sent_back_to_user', $returnid,$contents='Renvoyer', array("genid"=>$row['genid'], "record_id"=>$row['message_id']));
 		}
 		
@@ -74,7 +74,16 @@ if ($dbresult && $dbresult->RecordCount() > 0)
 $smarty->assign('itemsfound', $this->Lang('resultsfoundtext'));
 $smarty->assign('itemcount', count($rowarray));
 $smarty->assign('items', $rowarray);
-
+$smarty->assign('form2start',
+		$this->CreateFormStart($id,'mass_action',$returnid));
+$smarty->assign('form2end',
+		$this->CreateFormEnd());
+$articles = array("Marqué comme Envoyé"=>"sent","Marqué comme non envoyé"=>"not_sent", "Marqué comme reçu"=>"read", "Marqué comme non reçu"=>"unread");
+$smarty->assign('id_message', $this->CreateInputHidden($id,'id_message', $message_id));
+$smarty->assign('actiondemasse',
+		$this->CreateInputDropdown($id,'actiondemasse',$articles));
+$smarty->assign('submit_massaction',
+		$this->CreateInputSubmit($id,'submit_massaction',$this->Lang('apply_to_selection'),'','',$this->Lang('areyousure_actionmultiple')));
 echo $this->ProcessTemplate('show_recipients.tpl');
 
 

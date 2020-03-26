@@ -30,8 +30,9 @@ else
 if($error <1)
 {
 	$mess_ops = new T2t_messages;
-	$details = $mess_ops->details_message($message_id);
+	$details = $mess_ops->details_message($message_id);//les détails du message générique
 	//var_dump($details);
+	$details_recip = $mess_ops->details_message_recipients($message_id, $genid);
 	$message = $details['message'];
 	$ar_message = $details['ar'];
 	$relance = $details['relance'];
@@ -69,7 +70,7 @@ if($error <1)
 				$email_contact = "rien";
 		}
 
-		echo $status.'<br />';	
+		//echo $status.'<br />';	
 		//on vérifie si le message a déjà été envoyé (update) ou non (insert)
 		$has_been_sent  = $mess_ops->is_already_sent($message_id, $genid);
 		if(true == $has_been_sent)
@@ -78,9 +79,9 @@ if($error <1)
 		}
 		else
 		{
-			$add_to_recipients = $mess_ops->add_messages_to_recipients($message_id, $genid, $email_contact,$senttouser,$status, $ar);
+			$add_to_recipients = $mess_ops->add_messages_to_recipients($message_id, $genid, $email_contact,$details_recip['message'],$senttouser,$status, $ar);
 		}
-		
+		/*
 	//	var_dump($add_to_recipients);
 		$retourid = $this->GetPreference('pageid_messages');
 		$cg_ops = new CGExtensions;
@@ -96,19 +97,19 @@ if($error <1)
 		$tpl->assign('occurence', $occurence);
 		$tpl->assign('message',$message);
 	 	$output = $tpl->fetch();
-
+		*/
 		$cmsmailer = new \cms_mailer();
 		
 	//	$cmsmailer->SetFrom($details['sender']);//$this->GetPreference('admin_email'));
-		$cmsmailer->AddAddress($email_contact);
+		$cmsmailer->AddAddress($details_recip['recipients']);
 		$cmsmailer->IsHTML(true);
 		$cmsmailer->SetPriority($details['priority']);
-		$cmsmailer->SetBody($output);
+		$cmsmailer->SetBody($details_recip['message']);
 		$cmsmailer->SetSubject($details['subject']);
 		
                 if( !$cmsmailer->Send() ) 
 		{			
-                    	$mess_ops->not_sent_emails($message_id, $recipients);
+                    	$mess_ops->not_sent_emails($message_id, $details_recip['recipients']);
 			$this->Audit('',$this->GetName(),'Problem sending email to '.$email_contact);
 
                 }

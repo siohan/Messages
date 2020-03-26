@@ -2,7 +2,7 @@
 class SendTask implements CmsRegularTask
 {
 
-	
+//envoi des messages programmés...	
 	
 	public function get_name()
    	{
@@ -104,7 +104,8 @@ class SendTask implements CmsRegularTask
 					$destinataires[] = $email_contact;
 				}
 				
-				$lien = $mess->create_url($id,'default',$page, array("message_id"=>$message_id, "genid"=>$sels));
+				$lien = $mess->create_url($id,'default',$page, array("message_id"=>$mess_id, "genid"=>$sels));
+				/*
 				if($ar == 1)
 				{
 					$message.= '<p><strong>Merci de bien vouloir confirmer réception de ce message en cliquant sur le lien ci-après : <a href="'.$lien.'" >Je confirme réception</a></p>';
@@ -113,12 +114,15 @@ class SendTask implements CmsRegularTask
 				{
 					$message.= '<p><strong>Sans confirmation de réception, ce message se répétera.</strong></p>';
 				}
+				*/
 				$montpl = $mess->GetTemplateResource('tpl_messages.tpl');						
 				$smarty = cmsms()->GetSmarty();
 				// do not assign data to the global smarty
 				$tpl = $smarty->createTemplate($montpl);
 				$tpl->assign('lien',$lien);
 				$tpl->assign('message',$message);
+				$tpl->assign('ar', $ar);
+				$tpl->assign('relance', $relance);
 			 	$output = $tpl->fetch();
 				
 			}	

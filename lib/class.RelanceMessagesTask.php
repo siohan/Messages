@@ -28,7 +28,7 @@ class RelanceMessagesTask implements CmsRegularTask
       $last_execute = (int) $mess->GetPreference('LastRelanceMessages');
       
       // Définition de la périodicité de la tâche (24h ici)
-      if( $time - $last_execute > 900 ) return true; // hardcoded to 15 minutes
+      if( $time - $last_execute > 84600 ) return true; // hardcoded to 15 minutes
       return false;
       
    }
@@ -74,7 +74,7 @@ class RelanceMessagesTask implements CmsRegularTask
 
 			//on va chercher le dernier envoi
 			//on refait une requete pour sélectionner les personnes n'ayant pas confirmé réception
-			$query2 = "SELECT recipients, genid FROM ".cms_db_prefix()."module_messages_recipients WHERE message_id = ? AND ar = 0 AND timbre + ? > UNIX_TIMESTAMP()";
+			$query2 = "SELECT recipients, genid FROM ".cms_db_prefix()."module_messages_recipients WHERE message_id = ? AND ar = 0 AND timbre + ? < UNIX_TIMESTAMP()";
 			$dbresult2 = $db->Execute($query2, array($message_id, $occurence));
 		
 			if($dbresult2 && $dbresult2->RecordCount() >0)
@@ -86,8 +86,8 @@ class RelanceMessagesTask implements CmsRegularTask
 						$recipients = $row2['recipients'];
 						$genid = $row2['genid'];
 						$lien = $mess->create_url($id,'default',$page, array("message_id"=>$message_id, "genid"=>$genid));
-						$message.= '<p><strong>Merci de bien vouloir confirmer réception de ce message en cliquant sur le lien ci-après : <a href="'.$lien.'" >Je confirme réception</a></p>';
-						$message.= '<p><strong>Sans confirmation de réception, ce message se répétera.</strong></p>';
+						//$message.= '<p><strong>Merci de bien vouloir confirmer réception de ce message en cliquant sur le lien ci-après : <a href="'.$lien.'" >Je confirme réception</a></p>';
+						//$message.= '<p><strong>Sans confirmation de réception, ce message se répétera.</strong></p>';
 						//$priority = 3;
 						$cmsmailer = new \cms_mailer();
 						$cmsmailer->reset();

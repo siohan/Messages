@@ -88,6 +88,13 @@ switch($current_version)
 			$this->SetTemplate('messages_template',$template);
 		}
 	}
+	case "0.4":
+	{
+		$dict = NewDataDictionary( $db );
+		$flds = "message X";
+		$sqlarray = $dict->AddColumnSQL( cms_db_prefix()."module_messages_recipients", $flds);
+		$dict->ExecuteSQLArray($sqlarray);
+	}
 		
 	
 

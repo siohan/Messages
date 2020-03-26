@@ -69,15 +69,41 @@ function update_message($record_id, $sender, $senddate, $sendtime, $replyto, $gr
 		return false;
 	}
 }
+function details_message_recipients($message_id, $genid)
+{
+	$db = cmsms()->GetDb();
+	$query = "SELECT id, message_id, genid, recipients, sent, status, actif, ar, relance, timbre, message FROM ".cms_db_prefix()."module_messages_recipients WHERE message_id = ? AND genid = ?";
+	$dbresult = $db->Execute($query, array($message_id, $genid));
+	$details = array();
+	if($dbresult)
+	{
+		while($row = $dbresult->FetchRow())
+		{
+			$details['id'] = $row['id'];
+			$details['message_id'] = $row['message_id'];
+			$details['genid'] = $row['genid'];
+			$details['recipients'] = $row['recipients'];
+			$details['sent'] = $row['sent'];
+			$details['status'] = $row['status'];
+			$details['actif'] = $row['actif'];
+			$details['ar'] = $row['ar'];
+			$details['relance'] = $row['relance'];
+			$details['timbre'] = $row['timbre'];
+			$details['message'] = $row['message'];
+		}
+	}
+		return $details;
+	
 
+}
 //remplit la table avec les messages
-function add_messages_to_recipients($message_id, $genid, $recipients,$sent,$status, $ar)
+function add_messages_to_recipients($message_id, $genid, $recipients,$message,$sent,$status, $ar)
 {
 	$db = cmsms()->GetDb();
 	$relance = 0;
 	$timbre = time();
-	$query = "INSERT INTO ".cms_db_prefix()."module_messages_recipients (message_id, genid, recipients,sent,status, ar, relance,timbre) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-	$dbresult = $db->Execute($query, array($message_id, $genid, $recipients,$sent,$status, $ar, $relance, $timbre));
+	$query = "INSERT INTO ".cms_db_prefix()."module_messages_recipients (message_id, genid, recipients,message,sent,status, ar, relance,timbre) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+	$dbresult = $db->Execute($query, array($message_id, $genid, $recipients,$message,$sent,$status, $ar, $relance, $timbre));
 	if($dbresult)
 	{
 		return true;
@@ -119,6 +145,7 @@ function not_sent_emails($message_id, $recipients)
 		return false;
 	}
 }
+//pour indiquer qu'un message a été envoyé
 function sent_message($message_id)
 {
 	$db = cmsms()->GetDb();
@@ -164,6 +191,38 @@ function is_already_sent($message_id, $genid)
 		return false;
 	}
 }
+//variante pour le fichier mass_action
+//indique que l'email a été envoyé
+function sent_to_recipients($message_id)
+{
+	$db = cmsms()->GetDb();
+	$query = "UPDATE ".cms_db_prefix()."module_messages_recipients SET sent = 1 WHERE id = ?";
+	$dbresult = $db->Execute($query, array($message_id));
+	if($dbresult)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+//variante pour le fichier mass_action
+//indique que l'email n'a  pas été envoyé
+function not_sent_to_recipients($message_id)
+{
+	$db = cmsms()->GetDb();
+	$query = "UPDATE ".cms_db_prefix()."module_messages_recipients SET sent = 0, ar = 0 WHERE id = ?";
+	$dbresult = $db->Execute($query, array($message_id));
+	if($dbresult)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 //calcule le nombre d'erreurs sur un message (non envoyé, pb à l'envoi, etc...)
 function count_errors_per_message($message_id)
 {
@@ -195,7 +254,7 @@ function nb_messages_per_user($genid)
 	$db = cmsms()->GetDb();
 	$query = "SELECT count(*) AS nb FROM ".cms_db_prefix()."module_messages_recipients WHERE genid = ? AND ar < 1 AND actif = 1";
 	$dbresult = $db->Execute($query, array($genid));
-	if($dbresult)
+	if($dbresult && $dbresult->recordCount() >0)
 	{
 		$row = $dbresult->FetchRow();
 		$nb_messages = $row['nb'];//$dbresult->RecordCount();
@@ -207,11 +266,43 @@ function nb_messages_per_user($genid)
 	}
 }
 //met "marqué comme lu" ar=1 en bdd
-function ar($message_id, $genid)
+function ar($message_id)
 {
 	$db = cmsms()->GetDb();
-	$query = "UPDATE ".cms_db_prefix()."module_messages_recipients SET ar = 1 WHERE id = ? AND genid = ?";
-	$dbresult = $db->Execute($query, array($message_id, $genid));
+	$query = "UPDATE ".cms_db_prefix()."module_messages_recipients SET ar = 1, sent = 1 WHERE id = ?";
+	$dbresult = $db->Execute($query, array($message_id));
+	if($dbresult)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+	
+}
+//marque un message pour un seul destinataire comme non lu
+function not_ar($message_id)
+{
+	$db = cmsms()->GetDb();
+	$query = "UPDATE ".cms_db_prefix()."module_messages_recipients SET ar = 0 WHERE id = ?";
+	$dbresult = $db->Execute($query, array($message_id));
+	if($dbresult)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+	
+}
+//met "marqué comme lu" ar=1 en bdd pour tous les destinataires d'un message
+function ar_all($message_id)
+{
+	$db = cmsms()->GetDb();
+	$query = "UPDATE ".cms_db_prefix()."module_messages_recipients SET ar = 1 WHERE message_id = ?";
+	$dbresult = $db->Execute($query, array($message_id));
 	
 	
 }

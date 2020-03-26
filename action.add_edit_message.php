@@ -221,7 +221,7 @@ if(!empty($_POST))
 												$senttouser =1;
 											}
 											$cmsmailer->reset();
-											$add_to_recipients = $mess_ops->add_messages_to_recipients($message_id, $sels, $email_contact,$senttouser,$status, $ar);
+											$add_to_recipients = $mess_ops->add_messages_to_recipients($message_id, $sels, $email_contact,$output,$senttouser,$status, $ar);
 										}
 										unset($email_contact);	
 									}

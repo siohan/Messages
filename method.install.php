@@ -46,7 +46,7 @@ $flds = "
 	timbre I(11), 
 	ar I(1) DEFAULT 0,
 	relance I(1) DEFAULT 0,
-	occurence I(11)";
+	occurence I(11) DEFAULT 0";
 	$sqlarray = $dict->CreateTableSQL( cms_db_prefix()."module_messages_messages", $flds, $taboptarray);
 	$dict->ExecuteSQLArray($sqlarray);			
 //
@@ -61,6 +61,7 @@ $flds = "
 	message_id I(11),
 	genid I(11),
 	recipients C(255),
+	message X,
 	sent I(1) DEFAULT 0,
 	status C(255), 
 	actif I(1) DEFAULT 1,

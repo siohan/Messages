@@ -2,12 +2,12 @@
 
 #-------------------------------------------------------------------------
 # Module : Messages - 
-# Version : 0.4, Sc
-# Auteur : Claude SIOHAN
+# Version : 0.5, Sc
+# Auteur : AssoSimple
 #-------------------------------------------------------------------------
 /**
  *
- * @author Claude SIOHAN
+ * @author AssoSimple
  * @since 0.1
  * @version $Revision: 1 $
  * @modifiedby $LastChangedBy: Claude
@@ -20,10 +20,10 @@ class Messages extends CMSModule
   
   function GetName() { return 'Messages'; }   
   function GetFriendlyName() { return $this->Lang('friendlyname'); }   
-  function GetVersion() { return '0.4'; }  
+  function GetVersion() { return '0.5'; }  
   function GetHelp() { return $this->Lang('help'); }   
   function GetAuthor() { return 'AssoSimple'; } 
-  function GetAuthorEmail() { return 'claude.siohan@gmail.com'; }
+  function GetAuthorEmail() { return 'contact@asso-simple.fr'; }
   function GetChangeLog() { return $this->Lang('changelog'); }
     
   function IsPluginModule() { return true; }
@@ -41,7 +41,7 @@ class Messages extends CMSModule
   
   function GetDependencies()
   {
-	return array('Adherents'=>'0.3.4.5');
+	return array('Adherents'=>'0.3.5');
   }
 
   
