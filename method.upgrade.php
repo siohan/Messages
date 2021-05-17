@@ -95,6 +95,13 @@ switch($current_version)
 		$sqlarray = $dict->AddColumnSQL( cms_db_prefix()."module_messages_recipients", $flds);
 		$dict->ExecuteSQLArray($sqlarray);
 	}
+	
+	case "0.5":
+	{
+		$dict = NewDataDictionary( $db );
+		$sqlarray = $dict->AlterColumnSQL(cms_db_prefix()."module_messages_recipients", "status X");
+		$dict->ExecuteSQLArray( $sqlarray );
+	}
 		
 	
 

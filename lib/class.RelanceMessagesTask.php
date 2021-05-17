@@ -28,7 +28,7 @@ class RelanceMessagesTask implements CmsRegularTask
       $last_execute = (int) $mess->GetPreference('LastRelanceMessages');
       
       // Définition de la périodicité de la tâche (24h ici)
-      if( $time - $last_execute > 84600 ) return true; // hardcoded to 15 minutes
+      if( $time - $last_execute > 84600 ) return true; // hardcoded to daily process
       return false;
       
    }
@@ -90,24 +90,28 @@ class RelanceMessagesTask implements CmsRegularTask
 						//$message.= '<p><strong>Sans confirmation de réception, ce message se répétera.</strong></p>';
 						//$priority = 3;
 						$cmsmailer = new \cms_mailer();
-						$cmsmailer->reset();
-					//	$cmsmailer->SetFrom($sender);//$this->GetPreference('admin_email'));
-						$cmsmailer->AddAddress($recipients,$name='');
-						$cmsmailer->IsHTML(true);
-						$cmsmailer->SetPriority($priority);
-						$cmsmailer->SetBody($message);
-						$cmsmailer->SetSubject($subject);
-						
-				                if( !$cmsmailer->Send() ) 
-						{			
-				                    	$mess_ops->not_sent_emails($message_id, $recipients);
-							$this->Audit('',$this->GetName(),'Problem sending email to '.$recipients);
-
-				                }
-						else
+						try
 						{
+							$cmsmailer->reset();
+							//	$cmsmailer->SetFrom($sender);//$this->GetPreference('admin_email'));
+							$cmsmailer->AddAddress($recipients,$name='');
+							$cmsmailer->IsHTML(true);
+							$cmsmailer->SetPriority($priority);
+							$cmsmailer->SetBody($message);
+							$cmsmailer->SetSubject($subject);
+							$cmsmailer->Send();
 							$mess_ops->sent_email($message_id,$recipients);
 						}
+						catch (phpmailerException $e) 
+						{
+							$status = $e->errorMessage();
+							$mess_ops->not_sent_emails($message_id, $genid, $status);
+						} 
+						catch (Exception $e) 
+						{
+							echo $e->getMessage(); //Boring error messages from anything else!
+						}
+						
 				}
 				return true;
 			}

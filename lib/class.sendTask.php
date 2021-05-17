@@ -48,10 +48,7 @@ class SendTask implements CmsRegularTask
 	$db = cmsms()->GetDb();
 	
 	$query = "SELECT id ,sender, replyto, senddate, sendtime,priority, subject, message,group_id, sent, ar, relance, occurence FROM ".cms_db_prefix()."module_messages_messages WHERE sent = 0 AND timbre < UNIX_TIMESTAMP()";
-	
-      	$dbresult = $db->Execute($query);
-	//on a donc les n licences pour faire la deuxième requete
-	//on commence à boucler
+	$dbresult = $db->Execute($query);
 	if($dbresult && $dbresult->RecordCount()>0)  //la requete est ok et il y a des résultats
 	{
 		//on instancie la classe

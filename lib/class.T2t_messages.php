@@ -131,11 +131,11 @@ function update_recipients_message($message_id, $genid)
 	}
 }
 //indique que le message n'a pas été envoyé erreur email
-function not_sent_emails($message_id, $recipients)
+function not_sent_emails($message_id, $genid, $status)
 {
 	$db = cmsms()->GetDb();
-	$query = "UPDATE ".cms_db_prefix()."module_messages_recipients SET sent = 0, status = 'Echec envoi' WHERE message_id = ? AND recipients LIKE ?";
-	$dbresult = $db->Execute($query, array($message_id, $recipients));
+	$query = "UPDATE ".cms_db_prefix()."module_messages_recipients SET sent = 0, status = ? WHERE message_id = ? AND genid = ?";
+	$dbresult = $db->Execute($query, array($status, $message_id, $genid));
 	if($dbresult)
 	{
 		return true;
@@ -161,12 +161,12 @@ function sent_message($message_id)
 	}
 }
 //indique que le message est visible dans l'espace privé (pas forcément envoyé par email : email absent, incorrect...)
-function sent_email($message_id, $recipients)
+function sent_email($message_id, $genid)
 {
 	$db = cmsms()->GetDb();
 	$timbre = time();
-	$query = "UPDATE ".cms_db_prefix()."module_messages_recipients SET sent = 1, status = 'Messagerie interne', relance = relance+1, timbre = ? WHERE message_id = ? AND recipients LIKE ?";
-	$dbresult = $db->Execute($query, array($timbre,$message_id, $recipients));
+	$query = "UPDATE ".cms_db_prefix()."module_messages_recipients SET sent = 1, status = 'Ok', relance = relance+1, timbre = ? WHERE message_id = ? AND genid = ?";
+	$dbresult = $db->Execute($query, array($timbre,$message_id, $genid));
 	if($dbresult)
 	{
 		return true;
@@ -183,38 +183,6 @@ function is_already_sent($message_id, $genid)
 	$query = "SELECT * FROM ".cms_db_prefix()."module_messages_recipients WHERE message_id = ? AND genid = ?";
 	$dbresult = $db->Execute($query, array($message_id, $genid));
 	if($dbresult && $dbresult->RecordCount()>0)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-//variante pour le fichier mass_action
-//indique que l'email a été envoyé
-function sent_to_recipients($message_id)
-{
-	$db = cmsms()->GetDb();
-	$query = "UPDATE ".cms_db_prefix()."module_messages_recipients SET sent = 1 WHERE id = ?";
-	$dbresult = $db->Execute($query, array($message_id));
-	if($dbresult)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-//variante pour le fichier mass_action
-//indique que l'email n'a  pas été envoyé
-function not_sent_to_recipients($message_id)
-{
-	$db = cmsms()->GetDb();
-	$query = "UPDATE ".cms_db_prefix()."module_messages_recipients SET sent = 0, ar = 0 WHERE id = ?";
-	$dbresult = $db->Execute($query, array($message_id));
-	if($dbresult)
 	{
 		return true;
 	}
@@ -269,7 +237,7 @@ function nb_messages_per_user($genid)
 function ar($message_id)
 {
 	$db = cmsms()->GetDb();
-	$query = "UPDATE ".cms_db_prefix()."module_messages_recipients SET ar = 1, sent = 1 WHERE id = ?";
+	$query = "UPDATE ".cms_db_prefix()."module_messages_recipients SET ar = 1 WHERE id = ?";
 	$dbresult = $db->Execute($query, array($message_id));
 	if($dbresult)
 	{

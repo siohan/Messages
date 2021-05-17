@@ -2,7 +2,7 @@
 
 #-------------------------------------------------------------------------
 # Module : Messages - 
-# Version : 0.5, Sc
+# Version : 0.5.1, Sc
 # Auteur : AssoSimple
 #-------------------------------------------------------------------------
 /**
@@ -20,7 +20,7 @@ class Messages extends CMSModule
   
   function GetName() { return 'Messages'; }   
   function GetFriendlyName() { return $this->Lang('friendlyname'); }   
-  function GetVersion() { return '0.5'; }  
+  function GetVersion() { return '0.5.1'; }  
   function GetHelp() { return $this->Lang('help'); }   
   function GetAuthor() { return 'AssoSimple'; } 
   function GetAuthorEmail() { return 'contact@asso-simple.fr'; }
@@ -41,7 +41,7 @@ class Messages extends CMSModule
   
   function GetDependencies()
   {
-	return array('Adherents'=>'0.3.5');
+	return array('Adherents'=>'0.4');
   }
 
   
@@ -91,7 +91,6 @@ public function HasCapability($capability, $params = array())
 public function get_tasks()
 {
    $obj = null;
-	//$obj[0] = new RecupAdherentsTask();
    	$obj[0] = new SendTask();  
 	$obj[1 ] =new RelanceMessagesTask();
 	

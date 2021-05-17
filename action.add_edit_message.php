@@ -34,6 +34,8 @@ if(!empty($_POST))
 	}
 	$error = 0;
 	$mess_ops = new T2t_messages;
+	$cont_ops = new contact;
+	$cg_ops = new CGExtensions;
 	
 		if(isset($_POST['record_id']) && $_POST['record_id'] !='')
 		{
@@ -113,7 +115,9 @@ if(!empty($_POST))
 			$subject = $_POST['subject'];
 		}
 		else
-		{$error++;}
+		{
+			$error++;
+		}
 		if(isset($_POST['message']) && $_POST['message'] !='')
 		{
 			$message = $_POST['message'];
@@ -125,7 +129,7 @@ if(!empty($_POST))
 		}
 		*/
 
-		echo 'le nb error est :'.$error;
+		//echo 'le nb error est :'.$error;
 		if($error == 0)
 		{
 			$gp_ops = new groups;
@@ -154,102 +158,77 @@ if(!empty($_POST))
 				}
 				//on envoie ou pas ?
 				//on regarde si le message est programmé (scheduled)
-
-					//on extrait les utilisateurs (licence) du groupe sélectionné
-					$contacts_ops = new contact;
-					$adherents = $contacts_ops->UsersFromGroup($group_id);
-					$cg_ops = new CGExtensions;
-				//	var_dump($adherents);
-					$ar = 0;
-					foreach($adherents as $sels)
+				$retourid = $this->GetPreference('pageid_messages');
+				$page = $cg_ops->resolve_alias_or_id($retourid);
+				$montpl = $this->GetTemplateResource('tpl_messages.tpl');						
+				
+				
+				$query = "SELECT genid FROM ".cms_db_prefix()."module_adherents_groupes_belongs WHERE id_group = ?";
+				$dbresult = $db->Execute($query, array($group_id));
+				if($dbresult && $dbresult->recordCount() >0)
+				{
+					$smarty = cmsms()->GetSmarty();
+					$cmsmailer = new \cms_mailer();
+					$tpl = $smarty->createTemplate($montpl);
+					$tpl->assign('ar', $ar_message);
+					$tpl->assign('relance', $relance);
+					$tpl->assign('occurence', $occurence);
+					$tpl->assign('message',$message);
+					
+					while($row = $dbresult->FetchRow())
 					{
-						//avant on envoie dans le module emails pour tous les utilisateurs et sans traitement
-
-						$query = "SELECT contact FROM ".cms_db_prefix()."module_adherents_contacts WHERE genid = ? AND type_contact = 1 LIMIT 1";
-						$dbresult = $db->Execute($query, array($sels));
-						if($dbresult)
+						//on ajoute le message à chaque membre du groupe d'abord
+						$email_contact = $cont_ops->email_address($row['genid']);
+						if (false == $email_contact)
 						{
-							$retourid = $this->GetPreference('pageid_messages');
-							$page = $cg_ops->resolve_alias_or_id($retourid);
-
-							if($dbresult->RecordCount()>0)
-							{
-								$montpl = $this->GetTemplateResource('tpl_messages.tpl');						
-								$smarty = cmsms()->GetSmarty();
-								$cmsmailer = new \cms_mailer();
-								
-								while($row = $dbresult->FetchRow())
-								{
-									$email_contact = $row['contact'];
-									if(!is_null($email_contact))
-									{
-										$status = "Email Ok";
-										$lien = $this->create_url($id,'default',$page, array("message_id"=>$message_id, "genid"=>$sels));
-
-										$senttouser = 0;
-										if($timbre >time())
-										{
-											$senttouser = 0;
-										}
-										else
-										{
-											// do not assign data to the global smarty
-											$tpl = $smarty->createTemplate($montpl);
-											$tpl->assign('lien',$lien);
-											$tpl->assign('ar', $ar_message);
-											$tpl->assign('relance', $relance);
-											$tpl->assign('occurence', $occurence);
-											$tpl->assign('message',$message);
-										 	$output = $tpl->fetch();
-
-											$cmsmailer->SetFromName($sender);//$this->GetPreference('admin_email'));
-											$cmsmailer->AddAddress($email_contact);
-											$cmsmailer->IsHTML(true);
-											$cmsmailer->SetPriority($priority);
-											$cmsmailer->SetBody($output);
-											$cmsmailer->SetSubject($subject);
-										//	$cmsmailer->AddAttachment();
-										//	$cmsmailer->Send();
-											
-									                if( !$cmsmailer->Send() ) 
-											{			
-									                    	$senttouser = 0;
-												$this->Audit('',$this->GetName(),'Problem sending email to '.$v);
-									                }
-											else
-											{
-												$senttouser =1;
-											}
-											$cmsmailer->reset();
-											$add_to_recipients = $mess_ops->add_messages_to_recipients($message_id, $sels, $email_contact,$output,$senttouser,$status, $ar);
-										}
-										unset($email_contact);	
-									}
-									else
-									{
-											$status = "Email absent";
-											$email_contact = "rien";
-									}
-								}
-							}
+							$email_contact = 'No email';
 						}
-
-
-
-
-
-
-
-
-
-
+						$senttouser = 0;
+						$status = 0;
+						$ar = 0;
+						
+						$add_to_recipients = $mess_ops->add_messages_to_recipients($message_id, $row['genid'], $email_contact,$message,$senttouser,$status, $ar);
+						if(false != $email_contact)
+						{
+							//On peut envoyer
+							$lien = $this->create_url($id,'default',$page, array("message_id"=>$message_id, "genid"=>$row['genid']));
+							// do not assign data to the global smarty
+							
+							$tpl->assign('lien',$lien);
+							$output = $tpl->fetch();
+							try
+							{
+								$cmsmailer->SetFromName($sender);//$this->GetPreference('admin_email'));
+								$cmsmailer->AddAddress($email_contact);
+								$cmsmailer->IsHTML(true);
+								$cmsmailer->SetPriority($priority);
+								$cmsmailer->SetBody($output);
+								$cmsmailer->SetSubject($subject);
+								$cmsmailer->Send();
+								$mess_ops->sent_email($message_id, $row['genid']);
+							}
+							catch (phpmailerException $e) 
+							{
+  								
+  								$status = $e->errorMessage();
+								$mess_ops->not_sent_emails($message_id, $row['genid'], $status);
+							} 
+							catch (Exception $e) 
+							{
+  								echo $e->getMessage(); //Boring error messages from anything else!
+							}
+							unset($email_contact);
+						}
+						else
+						{
+							//pas d'email, on ne peut pas envoyer
+						}
+						
+						
+						
 					}
-
-
-
-
-
-
+				}	
+			
 			}
 			else
 			{
@@ -258,10 +237,6 @@ if(!empty($_POST))
 			$this->RedirectToAdminTab('messages');
 		}
 
-
-	
-	
-	
 	
 }
 else

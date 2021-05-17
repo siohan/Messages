@@ -3,7 +3,7 @@
 if( !isset($gCms) ) exit;
 debug_display($params, 'Parameters');
 //var_dump($params['sel']);
-$db =& $this->GetDb();
+$db = cmsms()->GetDb();
 if (isset($params['submit_massaction']) && isset($params['actiondemasse']) )
   {
      if( isset($params['sel']) && is_array($params['sel']) &&
@@ -25,6 +25,8 @@ if (isset($params['submit_massaction']) && isset($params['actiondemasse']) )
 			$this->RedirectToAdminTab('mess');
 			break;
 			
+		
+			
 			//marque les messages comme lus
 			case "read" :
 			foreach( $params['sel'] as $message_id )
@@ -32,38 +34,19 @@ if (isset($params['submit_massaction']) && isset($params['actiondemasse']) )
 	    			$mess = $mess_ops->ar($message_id);
 				
 	  		}
-			$this->SetMessage('Marqués comme lus et donc reçus');
-			$this->Redirect($id, 'show_recipients', $returnid, array("record_id"=>$params['id_message']));
+			$this->SetMessage('Marqués comme lus');
+			$this->Redirect($id, 'show_recipients', $returnid, array("record_id"=>$record_id));
 			break;
 			
+			//marque les messages comme non lus
 			case "unread" :
-			foreach( $params['sel'] as $record_id )
+			foreach( $params['sel'] as $message_id )
 	  		{
-	    			$mess = $mess_ops->not_ar($record_id);
-
+	    			$mess = $mess_ops->not_ar($message_id);
+				
 	  		}
 			$this->SetMessage('Marqués comme non lus');
-			$this->Redirect($id, 'show_recipients', $returnid, array("record_id"=>$params['id_message']));
-			break;
-			//marque les messages comme non lus
-			case "not_sent" :
-			foreach( $params['sel'] as $message_id )
-	  		{
-	    			$mess = $mess_ops->not_sent_to_recipients($message_id);
-				
-	  		}
-			$this->SetMessage('Marqués comme non envoyés et non reçus');
-			$this->Redirect($id, 'show_recipients', $returnid, array("record_id"=>$params['id_message']));
-			break;
-			
-			case "sent" :
-			foreach( $params['sel'] as $message_id )
-	  		{
-	    			$mess = $mess_ops->sent_to_recipients($message_id);
-				
-	  		}
-			$this->SetMessage('Marqués comme  envoyés');
-			$this->Redirect($id, 'show_recipients', $returnid, array("record_id"=>$params['id_message']));
+			$this->Redirect($id, 'show_recipients', $returnid, array("record_id"=>$record_id));
 			break;
 			
 			

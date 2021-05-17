@@ -44,13 +44,13 @@ $(document).ready(function(){
 {foreach from=$items item=entry}
   <tr class="{$entry->rowclass}">
 	<td>{$entry->id}</td>
-	<td>{$entry->genid}</td>
-	<td>{$entry->sent}</td>
+	<td>{$entry->nom}</td>
+	<td>{if $entry->sent =="1"}{admin_icon icon="true.gif"}{else}{admin_icon icon="false.gif"}{/if}</td>
 	<td>{$entry->status}</td>
-	<td>{$entry->ar}</td>
+	<td>{if $entry->ar =="0"}<a href="{cms_action_url action='messages_action' obj=confirmed record_id=$entry->id message_id=$entry->message_id}">{admin_icon icon="false.gif"}{else}{admin_icon icon="true.gif"}{/if}</td>
 	<td>{$entry->relance}</td>
 	<td>{$entry->envoi}</td>
-  <td>{$entry->sent_back}</td>
+  <td>{if $entry->sent == "0" || $entry->ar == "0"}<a href="{cms_action_url action='sent_back_to_user' genid=$entry->genid record_id=$entry->message_id}">Renvoyer</a>{/if}</td>
 <td><input type="checkbox" name="{$actionid}sel[]" value="{$entry->id}" class="select"></td>
   </tr>
 {/foreach}
@@ -59,7 +59,7 @@ $(document).ready(function(){
 
 <!--SELECT DROPDOWN -->
 <div class="pageoptions" style="float: right;">
-<br/>{$id_message}{$actiondemasse}{$submit_massaction}
+<br/>{$actiondemasse}{$submit_massaction}
   </div>
 
 {$form2end}

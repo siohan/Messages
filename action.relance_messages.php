@@ -10,8 +10,7 @@ if(!$this->CheckPermission('Messages use'))
 	$db = cmsms()->GetDb();
 	
 	$query = "SELECT id, occurence, timbre, subject, message, priority, ar, relance FROM ".cms_db_prefix()."module_messages_messages WHERE relance = 1";
-	
-      	$dbresult = $db->Execute($query);
+	$dbresult = $db->Execute($query);
 	//on a donc les n licences pour faire la deuxième requete
 	//on commence à boucler
 	if($dbresult && $dbresult->RecordCount()>0)  //la requete est ok et il y a des résultats
@@ -55,26 +54,29 @@ if(!$this->CheckPermission('Messages use'))
 						//$message.= $this->create_url($id,'default',$page, array("message_id"=>$message_id, "genid"=>$genid));
 						$priority = 3;
 						$cmsmailer = new \cms_mailer();
-						$cmsmailer->reset();
-					//	$cmsmailer->SetFrom($sender);//$this->GetPreference('admin_email'));
-						$cmsmailer->AddAddress($recipients,$name='');
-						$cmsmailer->IsHTML(true);
-						$cmsmailer->SetPriority($priority);
-						$cmsmailer->SetBody($message);
-						$cmsmailer->SetSubject($subject);
-						$cmsmailer->Send();
-				                if( !$cmsmailer->Send() ) 
-						{			
-				                    	$mess_ops->not_sent_emails($message_id, $recipients);
-							$this->Audit('',$this->GetName(),'Problem sending email to '.$recipients);
-
-				                }
-						else
+						try
 						{
-							$mess_ops->sent_email($message_id,$recipients);
+							$cmsmailer->SetFromName($details['sender']);//$this->GetPreference('admin_email'));
+							$cmsmailer->AddAddress($email_contact);
+							$cmsmailer->IsHTML(true);
+							$cmsmailer->SetPriority($details['priority']);
+							$cmsmailer->SetBody($output);
+							$cmsmailer->SetSubject($details['subject']);
+							$cmsmailer->Send();
+							$mess_ops->sent_email($message_id, $genid);
 						}
-				}
-			}
+						catch (phpmailerException $e) 
+						{
+				
+							$status = $e->errorMessage();
+							$mess_ops->not_sent_emails($message_id, $genid, $status);
+						} 
+						catch (Exception $e) 
+						{
+							echo $e->getMessage(); //Boring error messages from anything else!
+						}
+							}
+						}
 		}
 		
 	

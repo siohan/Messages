@@ -41,31 +41,13 @@ if ($dbresult && $dbresult->RecordCount() > 0)
 		$onerow->rowclass= $rowclass;
 		$onerow->id= $row['id'];
 		$onerow->message_id= $row['message_id'];
-		$onerow->genid= $adh_ops->get_name($row['genid']);
-		if($sent == 1)
-		{
-			$onerow->sent= $themeObject->DisplayImage('icons/system/true.gif', $this->Lang('true'), '', '', 'systemicon');
-		}
-		else
-		{
-			$onerow->sent= $themeObject->DisplayImage('icons/system/false.gif', $this->Lang('false'), '', '', 'systemicon');
-			$onerow->sent_back= $this->CreateLink($id, 'sent_back_to_user', $returnid,$contents='Renvoyer', array("genid"=>$row['genid'], "record_id"=>$row['message_id']));
-		}
-		if($ar == 1)
-		{
-			$onerow->ar= $themeObject->DisplayImage('icons/system/true.gif', $this->Lang('true'), '', '', 'systemicon');
-		}
-		else
-		{
-			$onerow->ar= $this->CreateLink($id, 'messages_action', $returnid,$themeObject->DisplayImage('icons/system/false.gif', $this->Lang('false'), '', '', 'systemicon'), array("obj"=>"confirmed", "record_id"=>$row['id'], "message_id"=>$row['message_id']));
-			$onerow->sent_back= $this->CreateLink($id, 'sent_back_to_user', $returnid,$contents='Renvoyer', array("genid"=>$row['genid'], "record_id"=>$row['message_id']));
-		}
-		
+		$onerow->genid= $row['genid'];
+		$onerow->nom= $adh_ops->get_name($row['genid']);
+		$onerow->ar= $row['ar'];
 		$onerow->status= $row['status'];
+		$onerow->sent= $row['sent'];
 		$onerow->relance= $row['relance'];
 		$onerow->envoi= $row['envoi'];
-	
-	
 		($rowclass == "row1" ? $rowclass= "row2" : $rowclass= "row1");
 		$rowarray[]= $onerow;
       }
@@ -78,7 +60,7 @@ $smarty->assign('form2start',
 		$this->CreateFormStart($id,'mass_action',$returnid));
 $smarty->assign('form2end',
 		$this->CreateFormEnd());
-$articles = array("Marqué comme Envoyé"=>"sent","Marqué comme non envoyé"=>"not_sent", "Marqué comme reçu"=>"read", "Marqué comme non reçu"=>"unread");
+$articles = array("Marqué comme reçu"=>"read", "Marqué comme non reçu"=>"unread");
 $smarty->assign('id_message', $this->CreateInputHidden($id,'id_message', $message_id));
 $smarty->assign('actiondemasse',
 		$this->CreateInputDropdown($id,'actiondemasse',$articles));

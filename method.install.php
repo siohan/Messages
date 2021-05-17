@@ -63,7 +63,7 @@ $flds = "
 	recipients C(255),
 	message X,
 	sent I(1) DEFAULT 0,
-	status C(255), 
+	status X, 
 	actif I(1) DEFAULT 1,
 	ar I(1) DEFAULT 0,
 	relance I(1) DEFAULT 0,
